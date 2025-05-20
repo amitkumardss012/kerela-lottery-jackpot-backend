@@ -49,12 +49,6 @@ app.use("/api/v1/buyer", routes_1.BuyerRoute);
 app.use("/api/v1/stats", routes_1.StatsRoute);
 app.use("/api/v1/qr", routes_1.QrRoute);
 // ⛔ 404 route handler
-// app.all("*", (_, res) => {
-//   res.status(statusCode.Bad_Request).json({
-//     success: false,
-//     message: "Route not found",
-//   });
-// });
 // ⚠️ Global error handling middleware
 app.use(middlewares_1.errorMiddleware);
 // 📤 Export the configured app
