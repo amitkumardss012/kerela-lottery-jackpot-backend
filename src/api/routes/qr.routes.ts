@@ -31,7 +31,7 @@ Qr.put(
       return next(new ErrorResponse("Phone number must be exactly 10 digits", statusCode.Bad_Request));
     }
 
-    try {
+   
       // 🔹 Step 1: Find existing QR Code
       let qrCode = await prisma.qRCode.findFirst();
       let oldPublicId = null;
@@ -93,9 +93,7 @@ Qr.put(
       }
 
       return SuccessResponse(res, "QR code updated successfully", qrCode);
-    } catch (error) {
-      return next(new ErrorResponse("Failed to add QR code", statusCode.Internal_Server_Error));
-    }
+    
   })
 );
 

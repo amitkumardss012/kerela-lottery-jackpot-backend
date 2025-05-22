@@ -36,65 +36,60 @@ Qr.put("/add", middlewares_1.multerUpload.single("image"), (0, middlewares_1.asy
     if (phone && phone.length !== 10) {
         return next(new response_util_1.ErrorResponse("Phone number must be exactly 10 digits", types_1.statusCode.Bad_Request));
     }
-    try {
-        // 🔹 Step 1: Find existing QR Code
-        let qrCode = yield config_1.prisma.qRCode.findFirst();
-        let oldPublicId = null;
-        if (qrCode === null || qrCode === void 0 ? void 0 : qrCode.image) {
-            const existingImage = qrCode.image;
-            oldPublicId = existingImage.public_id;
-        }
-        let cloudinaryResult = null;
-        if (image) {
-            // 🔹 Step 2: Upload new image to Cloudinary
-            cloudinaryResult = yield (0, config_1.uploadToCloudinary)(image.buffer, config_1.ENV.cloud_folder);
-            if (!cloudinaryResult) {
-                return next(new response_util_1.ErrorResponse("Failed to upload image to Cloudinary", types_1.statusCode.Internal_Server_Error));
-            }
-        }
-        if (qrCode) {
-            // 🔹 Step 3: Update the QR code in DB (Only update provided fields)
-            const updateData = { updatedAt: new Date() };
-            // Only update phone if provided
-            if (phone) {
-                updateData.phone = phone;
-            }
-            // Only update image if a new image was uploaded
-            if (cloudinaryResult) {
-                updateData.image = {
-                    public_id: cloudinaryResult.public_id,
-                    secure_url: cloudinaryResult.secure_url,
-                };
-            }
-            qrCode = yield config_1.prisma.qRCode.update({
-                where: { id: qrCode.id },
-                data: updateData,
-            });
-            // 🔹 Step 4: Delete old image from Cloudinary (Only if a new image was uploaded)
-            if (oldPublicId && cloudinaryResult) {
-                const deleteFromCloudinary = yield cloudinary_1.default.uploader.destroy(oldPublicId);
-                if ((deleteFromCloudinary === null || deleteFromCloudinary === void 0 ? void 0 : deleteFromCloudinary.result) !== "ok") {
-                    return next(new response_util_1.ErrorResponse("Failed to delete old image from Cloudinary", types_1.statusCode.Internal_Server_Error));
-                }
-            }
-        }
-        else {
-            // 🔹 Step 5: If QR code doesn't exist, create a new one
-            qrCode = yield config_1.prisma.qRCode.create({
-                data: {
-                    phone: phone || "", // Default to empty string if phone is not provided
-                    image: cloudinaryResult
-                        ? { public_id: cloudinaryResult.public_id, secure_url: cloudinaryResult.secure_url }
-                        : undefined,
-                    updatedAt: new Date(),
-                },
-            });
-        }
-        return (0, response_util_1.SuccessResponse)(res, "QR code updated successfully", qrCode);
+    // 🔹 Step 1: Find existing QR Code
+    let qrCode = yield config_1.prisma.qRCode.findFirst();
+    let oldPublicId = null;
+    if (qrCode === null || qrCode === void 0 ? void 0 : qrCode.image) {
+        const existingImage = qrCode.image;
+        oldPublicId = existingImage.public_id;
     }
-    catch (error) {
-        return next(new response_util_1.ErrorResponse("Failed to add QR code", types_1.statusCode.Internal_Server_Error));
+    let cloudinaryResult = null;
+    if (image) {
+        // 🔹 Step 2: Upload new image to Cloudinary
+        cloudinaryResult = yield (0, config_1.uploadToCloudinary)(image.buffer, config_1.ENV.cloud_folder);
+        if (!cloudinaryResult) {
+            return next(new response_util_1.ErrorResponse("Failed to upload image to Cloudinary", types_1.statusCode.Internal_Server_Error));
+        }
     }
+    if (qrCode) {
+        // 🔹 Step 3: Update the QR code in DB (Only update provided fields)
+        const updateData = { updatedAt: new Date() };
+        // Only update phone if provided
+        if (phone) {
+            updateData.phone = phone;
+        }
+        // Only update image if a new image was uploaded
+        if (cloudinaryResult) {
+            updateData.image = {
+                public_id: cloudinaryResult.public_id,
+                secure_url: cloudinaryResult.secure_url,
+            };
+        }
+        qrCode = yield config_1.prisma.qRCode.update({
+            where: { id: qrCode.id },
+            data: updateData,
+        });
+        // 🔹 Step 4: Delete old image from Cloudinary (Only if a new image was uploaded)
+        if (oldPublicId && cloudinaryResult) {
+            const deleteFromCloudinary = yield cloudinary_1.default.uploader.destroy(oldPublicId);
+            if ((deleteFromCloudinary === null || deleteFromCloudinary === void 0 ? void 0 : deleteFromCloudinary.result) !== "ok") {
+                return next(new response_util_1.ErrorResponse("Failed to delete old image from Cloudinary", types_1.statusCode.Internal_Server_Error));
+            }
+        }
+    }
+    else {
+        // 🔹 Step 5: If QR code doesn't exist, create a new one
+        qrCode = yield config_1.prisma.qRCode.create({
+            data: {
+                phone: phone || "", // Default to empty string if phone is not provided
+                image: cloudinaryResult
+                    ? { public_id: cloudinaryResult.public_id, secure_url: cloudinaryResult.secure_url }
+                    : undefined,
+                updatedAt: new Date(),
+            },
+        });
+    }
+    return (0, response_util_1.SuccessResponse)(res, "QR code updated successfully", qrCode);
 })));
 Qr.get("/get", (0, middlewares_1.asyncHandler)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
