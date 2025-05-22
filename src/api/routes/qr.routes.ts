@@ -106,8 +106,8 @@ Qr.get(
         return next(new ErrorResponse("QR code not found", statusCode.Not_Found));
       }
       return SuccessResponse(res, "QR code fetched successfully", qrCode);
-    } catch (error: any) {
-      return next(new ErrorResponse(`Failed to fetch QR cod ${error.messsage}`, statusCode.Internal_Server_Error));
+    } catch (error) {
+      return next(new ErrorResponse(`Failed to fetch QR code`, statusCode.Internal_Server_Error));
     }
   })
 );
