@@ -94,7 +94,7 @@ Qr.put(
 
       return SuccessResponse(res, "QR code updated successfully", qrCode);
     } catch (error: any) {
-      return next(`Failed to fetch QR cod ${error.messsage}`, statusCode.Internal_Server_Error));
+      return next(`Failed to fetch QR cod ${error}`, statusCode.Internal_Server_Error));
     }
   })
 );
